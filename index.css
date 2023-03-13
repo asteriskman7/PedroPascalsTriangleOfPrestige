@@ -1,0 +1,93 @@
+/*
+  .class
+  #id
+*/
+/*
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+*/
+
+:root {
+  --bg: hsl(176, 48%, 54%);
+  --cell-bg: hsl(151, 0%, 54%);
+  --cell-progress: hsl(123, 48%, 54%);
+  --cell-clickable: hsl(123, 15%, 54%);
+  --info-bg: hsl(60, 48%, 54%);
+  --rowInfo-bg: hsl(0, 0%, 77%);
+}
+
+body {
+  background-color: var(--bg);
+  overflow-x: scroll;
+  width: 250em;
+  font-family: serif;
+}
+
+#infoBox {
+  background-color: var(--info-bg);
+  position: fixed;
+  width: 20em;
+  height: 10em;
+  z-index: 100;
+  outline: 1px solid black;
+  padding: 0.5em;
+}
+
+#title {
+  font-size: large;
+  font-weight: bold;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+}
+
+.rowInfo {
+  width: 8em;
+  height: 4em;
+  outline: 1px solid black;
+  background-color: var(--rowInfo-bg);
+}
+
+.cell {
+  width: 6em;
+  height: 3em;
+  outline: 1px solid black;
+  position: relative;
+  background-color: var(--cell-bg);
+}
+
+.cellClickable {
+  background-color: var(--cell-clickable);
+}
+
+.cellContent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 30;
+}
+
+.cellTime {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 30;
+}
+
+.progress {
+  width: 100%;
+  height: 0%;
+  background-color: limegreen;
+  position: absolute;
+}
+
+.progressComplete {
+  height: 100%;
+}
