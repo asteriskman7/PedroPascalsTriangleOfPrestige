@@ -2,34 +2,40 @@
 
 /*
 TODO:
-  change infinity to target time if cell is clickable
-  when a cell is complete, turn the display time off
-  display total play time and total progress time
-
+  add some kind of winning message
+  when you win, stop the play time
+  need to indicate which cells are active because very long
+    time cells might not be obvious at first
 */
 
 class App {
   constructor() {
     this.disableSaves = false;
     this.cellValues = {};
-    this.completeCells = {};
     this.progressElements = {};
     this.timeElements = {};
 
     this.loadFromStorage();
+    this.totalTime = 0;
+    this.completeTime = 0;
+
+    this.UI = {};
+    'infoPlayTime,infoTimeRemaining,infoProgress,resetContainer,resetButton,resetYes,resetNo'.split`,`.forEach( id => {
+      this.UI[id] = document.getElementById(id);
+    });
+
+    this.UI.resetButton.onclick = () => this.UI.resetContainer.style.display = 'block';
+    this.UI.resetYes.onclick = () => this.reset();
+    this.UI.resetNo.onclick = () => this.UI.resetContainer.style.display = 'none';
 
     const parent = document.getElementById('cellsContainer');
+    const completeList = [];
 
-    for (let i = 0; i < 30; i++) {
+    const rowCount = 30;
+
+    for (let i = 0; i < rowCount; i++) {
       const row = document.createElement('div');
       row.classList.add('row');
-      const rowInfo = document.createElement('div');
-      rowInfo.innerHTML = `<div>Point x: <span id='rowPointX${i}'>1</span></div>
-      <div>Time /: <span id='rowPointD${i}'>1</span></div>
-      <button type='button'>x</button><button type='button'>/</button>
-      `;
-      rowInfo.classList.add('rowInfo');
-      //row.appendChild(rowInfo);
 
       for (let j = 0; j <= i; j++) {
         const button = document.createElement('div');
@@ -42,7 +48,8 @@ class App {
         cellContent.innerText = this.formatCellVal(cellValue);
         const cellTime = document.createElement('div');
         cellTime.classList.add('cellTime');
-        cellTime.innerText = 'Infinity';
+        cellTime.innerText = this.remainingToStr(cellValue * 1000);
+        this.totalTime += cellValue * 1000;
 
         const progress = document.createElement('div');
         progress.classList.add('progress');
@@ -60,11 +67,32 @@ class App {
         button.appendChild(cellContent);
         button.appendChild(cellTime);
         row.appendChild(button);
+        if (this.state.completeCells[`${i},${j}`]) {
+          completeList.push({row: i, col: j});
+          progress.style.height = '100%';
+          cellTime.innerText = '';
+          progress.style.filter = 'opacity(1.0)';
+          button.style.cursor = 'not-allowed';
+        }
+
+        if (this.state.activeCells.some( cell => {return cell.row === i && cell.col === j;})) {
+          button.style.cursor = 'not-allowed';
+        }
+
+        if (j === i || (i === (rowCount - 1))) {
+          button.classList.add('cellRowEnd');
+        }
       }
 
       parent.appendChild(row);
 
     }
+
+    completeList.forEach( cell => {
+      this.progressComplete(cell.row, cell.col);
+    });
+
+
 
     //scroll to top middle
     setTimeout( () => {
@@ -83,7 +111,8 @@ class App {
     const rawState = localStorage.getItem('PedroPascalsTriangle');
 
     this.state = {
-      activeCells: []
+      activeCells: [],
+      completeCells: {}
     };
 
     if (rawState !== null) {
@@ -134,16 +163,22 @@ class App {
   isCellActive(row, col) {
     if (row < 0) {return true;}
     if (col < 0 || col > row) {return true;}
-    return this.completeCells[`${row},${col}`];
+    return this.state.completeCells[`${row},${col}`];
   }
 
   cellButtonClick(button, row, col) {
 
     if (this.isCellActive(row - 1, col) && this.isCellActive(row - 1, col - 1)) {
 
-      button.progress.classList.add('progressComplete');
-      //TODO: make sure cell is not already active
+      const alreadyActive = this.state.activeCells.some( cell => {
+        return cell.row === row && cell.col === col;
+      });
 
+      if (alreadyActive || this.isCellActive(row, col)) {
+        return;
+      }
+
+      button.style.cursor = 'not-allowed';
       const duration = this.getCellVal(row, col) * 1000;
       this.state.activeCells.push({
         name: `${row},${col}`,
@@ -159,18 +194,23 @@ class App {
   }
 
   progressComplete(row, col) {
-    this.completeCells[`${row},${col}`] = true;
+    this.state.completeCells[`${row},${col}`] = true;
+    this.completeTime += this.getCellVal(row, col) * 1000; 
     console.log('progress complete', row, col);
     //TODO: handle case when we are on the LAST row and there is no row+1
-    if (col === 0 || this.completeCells[`${row},${col-1}`]) {
+    if (col === 0 || this.state.completeCells[`${row},${col-1}`]) {
       //mark row+1 col as clickable
       const cell = document.getElementById(`cellButton${row+1}_${col}`);
-      cell.classList.add('cellClickable');
+      if (cell) {
+        cell.classList.add('cellClickable');
+      }
     }
-    if (col === row || this.completeCells[`${row},${col+1}`]) {
+    if (col === row || this.state.completeCells[`${row},${col+1}`]) {
       //mark row+1 col+1 as clickable
       const cell = document.getElementById(`cellButton${row+1}_${col+1}`);
-      cell.classList.add('cellClickable');
+      if (cell) {
+        cell.classList.add('cellClickable');
+      }
     }
   }
 
@@ -181,7 +221,9 @@ class App {
 
   update() {
     const curTime = (new Date()).getTime();
+    this.partialCompleteTime = this.completeTime;
     this.state.activeCells.forEach( cell => {
+      const completeTime = curTime - cell.startTime;
       const remaining = Math.max(0, (cell.startTime + cell.duration) - curTime);
       cell.percent = Math.min(100, 100 * (curTime - cell.startTime) / cell.duration);
       cell.remaining = remaining;
@@ -189,9 +231,9 @@ class App {
         cell.complete = true;
         this.progressComplete(cell.row, cell.col);
       }
+      this.partialCompleteTime += completeTime;
     });
 
-    this.state.activeCells = this.state.activeCells.filter( cell => cell.complete !== true );
   }
 
   draw() {
@@ -201,8 +243,26 @@ class App {
       progressElement.style.height = `${cell.percent}%`;
 
       const timeText = this.remainingToStr(cell.remaining);
-      timeElement.innerText = timeText;
+      if (cell.percent < 100) {
+        timeElement.innerText = timeText;
+      } else {
+        timeElement.innerText = '';
+        progressElement.style.filter = 'opacity(1.0)';
+        progressElement.parentElement.style.cursor = 'not-allowed';
+      }
     });
+
+    this.state.activeCells = this.state.activeCells.filter( cell => cell.complete !== true );
+
+    const playTime = (new Date()).getTime() - this.state.gameStart;
+    this.UI.infoPlayTime.innerText = this.remainingToStr(playTime);
+
+    const timeRemaining = this.totalTime - this.partialCompleteTime;
+    this.UI.infoTimeRemaining.innerText = this.remainingToStr(timeRemaining, true);
+
+    const remainingPercent = 100 - 100 * timeRemaining / this.totalTime;
+    this.UI.infoProgress.style.width = `${remainingPercent}%`;
+    
   }
   timeToObj(t) {
     const result = {};
@@ -220,8 +280,12 @@ class App {
     return result;
   }
 
-  remainingToStr(ms) {
+  remainingToStr(ms, full) {
     const timeObj = this.timeToObj(ms / 1000);
+
+    if (full) {
+      return `${timeObj.y}:${timeObj.d.toString().padStart(3,0)}:${timeObj.h.toString().padStart(2,0)}:${timeObj.m.toString().padStart(2,0)}:${timeObj.s.toFixed(1).padStart(4,0)}`;
+    }
 
     if (timeObj.y > 0 || timeObj.d > 0 || timeObj.h > 0) {
       return `${timeObj.y}:${timeObj.d.toString().padStart(3,0)}:${timeObj.h.toString().padStart(2,0)}:${timeObj.m.toString().padStart(2,0)}`;

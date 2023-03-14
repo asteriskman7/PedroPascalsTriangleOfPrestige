@@ -3,18 +3,29 @@
   <head>
     <meta charset="utf-8">
     <title>Pedro Pascal's Triangle</title>
-    <!-- <link rel="icon" href="favicon.png"> -->
+    <link rel="icon" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
   </head>
   <body>
-    <!--
     <div id='infoBox'>
-      <div id='title'>Pascal's Prestige</div>
-      <div>Cell points: <span id='cellPoints'>?</span></div>
-      <div>Prestige points: <span id='prestigePoints'>?</span></div>
+      <div id='title'>Pedro Pascal's Triangle</div>
+      <div>Total play time: <span id='infoPlayTime'></span></div>
+      <div>Total time remaining: <span id='infoTimeRemaining'></span></div>
+      <div id='infoProgressContainer'><div id='infoProgress'></div></div>
+      <div>There are no upgrades.<br>There is only Pedro Pascal.</div>
+      <div><button id='resetButton'>Reset Game</button></div>
     </div>
-    -->
+    <div id='resetContainer'>
+      Are you sure you want to reset?
+      <div>
+        <button id='resetYes' class='buttonUtil'>Yes</button>
+        <button id='resetNo' class='buttonUtil'>No</button>
+      </div>
+    </div>
     <div id='cellsContainer'></div>
     <script src="index.js"></script>
   </body>
