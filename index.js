@@ -1,12 +1,5 @@
 "use strict";
 
-/*
-TODO:
-  change game name on github to PPToP
-  more pedro
-  make some way to speed everything up?
-*/
-
 class App {
   constructor() {
     this.disableSaves = false;
@@ -20,9 +13,10 @@ class App {
     this.completeTime = 0;
     this.cellCount = 0;
     this.completeCount = 0;
+    this.activated = 0;
 
     this.UI = {};
-    'infoPlayTime,infoTimeRemaining,infoProgress,resetContainer,resetButton,resetYes,resetNo,winContainer,winClose,winPlayTime'.split`,`.forEach( id => {
+    'infoPlayTime,infoTimeRemaining,infoProgress,resetContainer,resetButton,resetYes,resetNo,winContainer,winClose,winPlayTime,linkIcon'.split`,`.forEach( id => {
       this.UI[id] = document.getElementById(id);
     });
 
@@ -79,11 +73,13 @@ class App {
           progress.style.filter = 'opacity(1.0)';
           button.style.cursor = 'not-allowed';
           button.style.backgroundColor = this.cellColors[styleIndex];
+          console.log('complete', i, j);
         }
 
         if (this.state.activeCells.some( cell => {return cell.row === i && cell.col === j;})) {
           button.style.cursor = 'not-allowed';
           button.style.backgroundColor = this.cellColors[styleIndex];
+          console.log('currently running', i, j);
         }
 
         if (j === i || (i === (rowCount - 1))) {
@@ -111,6 +107,7 @@ class App {
     
     const topCell = document.getElementById(`cellButton${0}_${0}`);
     topCell.classList.add('cellClickable');
+    this.activated++;
 
     setInterval(() => this.tick(), 1000 / 30);
     setInterval(() => this.saveToStorage(), 5000);
@@ -203,25 +200,28 @@ class App {
       });
 
     }
+    this.saveToStorage();
   }
 
   progressComplete(row, col) {
     this.state.completeCells[`${row},${col}`] = true;
     this.completeTime += this.getCellVal(row, col) * 1000; 
     this.completeCount++;
-    console.log('progress complete', row, col);
+    //console.log('progress complete', row, col);
     if (col === 0 || this.state.completeCells[`${row},${col-1}`]) {
       //mark row+1 col as clickable
       const cell = document.getElementById(`cellButton${row+1}_${col}`);
-      if (cell) {
+      if (cell && !cell.classList.contains('cellClickable')) {
         cell.classList.add('cellClickable');
+        this.activated++;
       }
     }
     if (col === row || this.state.completeCells[`${row},${col+1}`]) {
       //mark row+1 col+1 as clickable
       const cell = document.getElementById(`cellButton${row+1}_${col+1}`);
-      if (cell) {
+      if (cell && !cell.classList.contains('cellClickable')) {
         cell.classList.add('cellClickable');
+        this.activated++;
       }
     }
 
@@ -254,6 +254,8 @@ class App {
       this.partialCompleteTime += completeTime;
     });
 
+    this.clickableCount = this.activated - (this.completeCount + this.state.activeCells.length);
+
   }
 
   draw() {
@@ -284,6 +286,11 @@ class App {
     const remainingPercent = 100 - 100 * timeRemaining / this.totalTime;
     this.UI.infoProgress.style.width = `${remainingPercent}%`;
     
+    const icon = ['./favicon.png', './faviconAlert.png'][+(this.clickableCount > 0)];
+    if (this.UI.linkIcon.href !== icon) {
+      this.UI.linkIcon.href = icon;
+    }
+
   }
   timeToObj(t) {
     const result = {};
