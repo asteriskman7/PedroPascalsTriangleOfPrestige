@@ -14,7 +14,7 @@
   --bg: hsl(176, 48%, 54%);
   --cell-bg: hsl(151, 0%, 54%);
   --cell-progress: hsl(123, 48%, 54%);
-  --cell-clickable: hsl(123, 15%, 54%);
+  --cell-clickable: hsl(123, 0%, 74%);
   --info-bg: hsl(60, 48%, 54%);
   --rowInfo-bg: hsl(0, 0%, 77%);
 }
@@ -31,7 +31,7 @@ body {
 #infoBox {
   background-color: var(--info-bg);
   position: fixed;
-  width: 24em;
+  width: 28em;
   /*height: 10em;*/
   z-index: 100;
   outline: 1px solid black;
@@ -39,7 +39,7 @@ body {
   box-shadow: 6px 6px 5px hsla(0, 0%, 0%, 0.5);
 }
 
-#title {
+.title {
   font-size: large;
   font-weight: bold;
 }
@@ -51,7 +51,7 @@ body {
 
 .cell {
   width: 6.5em;
-  height: 3em;
+  height: 4em;
   outline: 1px solid black;
   position: relative;
   background-color: var(--cell-bg);
@@ -120,4 +120,29 @@ body {
   padding: 5em;
   box-shadow: 6px 6px 5px hsla(0, 0%, 0%, 0.5);
   z-index: 200; 
+  outline: 1px solid black;
+}
+
+#winContainer {
+  display: none;
+  position: fixed;
+  background: white;
+  z-index: 300;
+  box-shadow: 6px 6px 5px hsla(0, 0%, 0%, 0.5);
+  padding: 0.5em;
+  outline: 1px solid black;
+  animation: rainbow-bg 2.5s linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes rainbow-bg {
+  100%,0%{
+    background-color: hsl(0, 48%, 54%);
+  }
+  33%{
+    background-color: hsl(120, 48%, 54%);
+  }
+  66%{
+    background-color: hsl(240, 48%, 54%);
+  }
 }

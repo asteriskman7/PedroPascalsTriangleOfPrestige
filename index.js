@@ -2,10 +2,9 @@
 
 /*
 TODO:
-  add some kind of winning message
-  when you win, stop the play time
-  need to indicate which cells are active because very long
-    time cells might not be obvious at first
+  change game name on github to PPToP
+  more pedro
+  make some way to speed everything up?
 */
 
 class App {
@@ -14,19 +13,23 @@ class App {
     this.cellValues = {};
     this.progressElements = {};
     this.timeElements = {};
+    this.cellColors = ['hsl(123, 15%, 54%)', 'hsl(60, 48%, 54%)'];
 
     this.loadFromStorage();
     this.totalTime = 0;
     this.completeTime = 0;
+    this.cellCount = 0;
+    this.completeCount = 0;
 
     this.UI = {};
-    'infoPlayTime,infoTimeRemaining,infoProgress,resetContainer,resetButton,resetYes,resetNo'.split`,`.forEach( id => {
+    'infoPlayTime,infoTimeRemaining,infoProgress,resetContainer,resetButton,resetYes,resetNo,winContainer,winClose,winPlayTime'.split`,`.forEach( id => {
       this.UI[id] = document.getElementById(id);
     });
 
     this.UI.resetButton.onclick = () => this.UI.resetContainer.style.display = 'block';
     this.UI.resetYes.onclick = () => this.reset();
     this.UI.resetNo.onclick = () => this.UI.resetContainer.style.display = 'none';
+    this.UI.winClose.onclick = () => this.UI.winContainer.style.display = 'none';
 
     const parent = document.getElementById('cellsContainer');
     const completeList = [];
@@ -42,6 +45,8 @@ class App {
         button.classList.add('cell');
         button.id = `cellButton${i}_${j}`;
 
+        this.cellCount++;
+
         const cellContent = document.createElement('div');
         cellContent.classList.add('cellContent');
         const cellValue = this.getCellVal(i, j);
@@ -53,12 +58,12 @@ class App {
 
         const progress = document.createElement('div');
         progress.classList.add('progress');
+        const styleIndex = cellValue % 2;
+        progress.style.background = `url('./p${styleIndex}.png')`;
+        progress.style.backgroundSize = 'cover';
+        progress.style.backgroundPosition = 'center';
         this.progressElements[`${i},${j}`] = progress;
         this.timeElements[`${i},${j}`] = cellTime;
-        //progress.style.transition = `all ${cellValue}s linear`;
-        //progress.addEventListener('transitionend', () => {
-        //  this.progressComplete(i, j);
-        //});
         button.onclick = () => {
           this.cellButtonClick(button, i, j);
         };
@@ -73,10 +78,12 @@ class App {
           cellTime.innerText = '';
           progress.style.filter = 'opacity(1.0)';
           button.style.cursor = 'not-allowed';
+          button.style.backgroundColor = this.cellColors[styleIndex];
         }
 
         if (this.state.activeCells.some( cell => {return cell.row === i && cell.col === j;})) {
           button.style.cursor = 'not-allowed';
+          button.style.backgroundColor = this.cellColors[styleIndex];
         }
 
         if (j === i || (i === (rowCount - 1))) {
@@ -91,6 +98,8 @@ class App {
     completeList.forEach( cell => {
       this.progressComplete(cell.row, cell.col);
     });
+
+    this.completeCount = completeList.length;
 
 
 
@@ -108,7 +117,7 @@ class App {
   }
 
   loadFromStorage() {
-    const rawState = localStorage.getItem('PedroPascalsTriangle');
+    const rawState = localStorage.getItem('PedroPascalsTriangleOfPrestige');
 
     this.state = {
       activeCells: [],
@@ -129,12 +138,12 @@ class App {
     if (this.disableSaveS) {return;}
 
     const saveString = JSON.stringify(this.state);
-    localStorage.setItem('PedroPascalsTriangle', saveString);
+    localStorage.setItem('PedroPascalsTriangleOfPrestige', saveString);
   }
 
   reset() {
     this.disableSaves = true;
-    localStorage.removeItem('PedroPascalsTriangle');
+    localStorage.removeItem('PedroPascalsTriangleOfPrestige');
     window.location.reload();
   }
 
@@ -179,6 +188,9 @@ class App {
       }
 
       button.style.cursor = 'not-allowed';
+      const styleIndex = this.getCellVal(row, col) % 2;
+      button.style.background = this.cellColors[styleIndex];
+
       const duration = this.getCellVal(row, col) * 1000;
       this.state.activeCells.push({
         name: `${row},${col}`,
@@ -196,8 +208,8 @@ class App {
   progressComplete(row, col) {
     this.state.completeCells[`${row},${col}`] = true;
     this.completeTime += this.getCellVal(row, col) * 1000; 
+    this.completeCount++;
     console.log('progress complete', row, col);
-    //TODO: handle case when we are on the LAST row and there is no row+1
     if (col === 0 || this.state.completeCells[`${row},${col-1}`]) {
       //mark row+1 col as clickable
       const cell = document.getElementById(`cellButton${row+1}_${col}`);
@@ -211,6 +223,14 @@ class App {
       if (cell) {
         cell.classList.add('cellClickable');
       }
+    }
+
+    if (this.completeCount >= this.cellCount && this.state.endTime === undefined) {
+      this.state.endTime = (new Date()).getTime();
+      const playTime = this.state.endTime - this.state.gameStart;
+      this.UI.winPlayTime.innerText = this.remainingToStr(playTime);
+      this.UI.winContainer.style.display = 'block'; 
+      this.saveToStorage();
     }
   }
 
@@ -254,7 +274,8 @@ class App {
 
     this.state.activeCells = this.state.activeCells.filter( cell => cell.complete !== true );
 
-    const playTime = (new Date()).getTime() - this.state.gameStart;
+    const curTime = this.state.endTime ?? (new Date()).getTime();
+    const playTime = curTime - this.state.gameStart;
     this.UI.infoPlayTime.innerText = this.remainingToStr(playTime);
 
     const timeRemaining = this.totalTime - this.partialCompleteTime;

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Pedro Pascal's Triangle</title>
+    <title>Pedro Pascal's Triangle of Prestige</title>
     <link rel="icon" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +12,7 @@
   </head>
   <body>
     <div id='infoBox'>
-      <div id='title'>Pedro Pascal's Triangle</div>
+      <div id='title' class='title'>Pedro Pascal's Triangle of Prestige</div>
       <div>Total play time: <span id='infoPlayTime'></span></div>
       <div>Total time remaining: <span id='infoTimeRemaining'></span></div>
       <div id='infoProgressContainer'><div id='infoProgress'></div></div>
@@ -25,6 +25,16 @@
         <button id='resetYes' class='buttonUtil'>Yes</button>
         <button id='resetNo' class='buttonUtil'>No</button>
       </div>
+    </div>
+    <div id='winContainer'>
+      <div>
+        Thank you for completing <span class='title'>Pedro Pascal's Triangle of Prestige</span>!
+      </div>
+      <div>
+        Your total play time was <span id='winPlayTime'></span>.
+      </div>
+      <img id='winImg' src='./ppoint.png'>
+      <button id='winClose'>Close</button>
     </div>
     <div id='cellsContainer'></div>
     <script src="index.js"></script>
