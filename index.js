@@ -278,7 +278,7 @@ class App {
 
     const curTime = this.state.endTime ?? (new Date()).getTime();
     const playTime = curTime - this.state.gameStart;
-    this.UI.infoPlayTime.innerText = this.remainingToStr(playTime);
+    this.UI.infoPlayTime.innerText = this.remainingToStr(playTime, true);
 
     const timeRemaining = this.totalTime - this.partialCompleteTime;
     this.UI.infoTimeRemaining.innerText = this.remainingToStr(timeRemaining, true);
