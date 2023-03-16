@@ -16,7 +16,7 @@ class App {
     this.activated = 0;
 
     this.UI = {};
-    'infoPlayTime,infoTimeRemaining,infoProgress,resetContainer,resetButton,resetYes,resetNo,winContainer,winClose,winPlayTime,linkIcon'.split`,`.forEach( id => {
+    'infoPlayTime,infoTimeRemaining,infoProgress,resetContainer,resetButton,resetYes,resetNo,winContainer,winClose,winPlayTime,linkIcon,infoNext'.split`,`.forEach( id => {
       this.UI[id] = document.getElementById(id);
     });
 
@@ -73,13 +73,11 @@ class App {
           progress.style.filter = 'opacity(1.0)';
           button.style.cursor = 'not-allowed';
           button.style.backgroundColor = this.cellColors[styleIndex];
-          console.log('complete', i, j);
         }
 
         if (this.state.activeCells.some( cell => {return cell.row === i && cell.col === j;})) {
           button.style.cursor = 'not-allowed';
           button.style.backgroundColor = this.cellColors[styleIndex];
-          console.log('currently running', i, j);
         }
 
         if (j === i || (i === (rowCount - 1))) {
@@ -207,7 +205,6 @@ class App {
     this.state.completeCells[`${row},${col}`] = true;
     this.completeTime += this.getCellVal(row, col) * 1000; 
     this.completeCount++;
-    //console.log('progress complete', row, col);
     if (col === 0 || this.state.completeCells[`${row},${col-1}`]) {
       //mark row+1 col as clickable
       const cell = document.getElementById(`cellButton${row+1}_${col}`);
@@ -259,12 +256,16 @@ class App {
   }
 
   draw() {
+    let minRemaining = Infinity;
     this.state.activeCells.forEach( cell => {
       const progressElement = this.progressElements[cell.name];
       const timeElement = this.timeElements[cell.name]
       progressElement.style.height = `${cell.percent}%`;
 
       const timeText = this.remainingToStr(cell.remaining);
+      if (cell.remaining < minRemaining) {
+        minRemaining = cell.remaining;
+      }
       if (cell.percent < 100) {
         timeElement.innerText = timeText;
       } else {
@@ -279,6 +280,11 @@ class App {
     const curTime = this.state.endTime ?? (new Date()).getTime();
     const playTime = curTime - this.state.gameStart;
     this.UI.infoPlayTime.innerText = this.remainingToStr(playTime, true);
+
+    this.UI.infoNext.innerText = this.remainingToStr(minRemaining, true);
+    document.title = `Pedro Pascal's Triangle of Prestige - ${this.remainingToStr(minRemaining)}`;
+
+
 
     const timeRemaining = this.totalTime - this.partialCompleteTime;
     this.UI.infoTimeRemaining.innerText = this.remainingToStr(timeRemaining, true);
