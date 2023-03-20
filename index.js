@@ -315,6 +315,10 @@ class App {
   }
 
   remainingToStr(ms, full) {
+    if (ms === Infinity) {
+      return 'Infinity';
+    }
+
     const timeObj = this.timeToObj(ms / 1000);
 
     if (full) {
