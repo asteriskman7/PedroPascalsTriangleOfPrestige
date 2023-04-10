@@ -20,7 +20,7 @@
       <div>There are no upgrades.<br>There is only Pedro Pascal.</div>
       <hr>
       <div>Discuss on <a href='https://discord.gg/pC9RY5B'>discord</a>.</div>
-      <div><button id='resetButton'>Reset Game</button></div>
+      <div><button id='resetButton'>Reset Game</button><button id='imexShow'>Import/Export</button></div>
       <div id='att'>&#128012; approved</div>
     </div>
     <div id='resetContainer'>
@@ -45,6 +45,15 @@
       </div>
       <img id='winImg' src='./ppoint.png'>
       <button id='winClose'>Close</button>
+    </div>
+    <div id='imexContainer'>
+      <div>Import / Export</div>
+      <textarea id='imexText' rows='4' cols='20'></textarea>
+      <div>
+        <button id='imexImport' class='buttonUtil'>Import</button>
+        <button id='imexExport' class='buttonUtil'>Export</button>
+        <button id='imexClose' class='buttonUtil'>Close</button>
+      </div>
     </div>
     <div id='cellsContainer'></div>
     <script src="index.js"></script>
